@@ -1,20 +1,17 @@
+import { useEffect, useState } from "react";
 import { Chargebee } from "@chargebee/chargebee-js-types";
-import { useEffect, useMemo, useRef, useState } from "react";
 
 export const useChargebee = () => {
-  const [isChargebeeLoaded, setIsChargebeeLoaded] = useState(false);
-  const chargebee = useMemo<typeof Chargebee>(() => {
-    if (!isChargebeeLoaded) {
-      return null;
-    } else {
-      return window.Chargebee;
-    }
-  }, [isChargebeeLoaded]);
-
+  const [isChargebeeInited, setIsChargebeeInited] = useState(false);
   useEffect(() => {
     const interval = setInterval(() => {
-      if (window.Chargebee) {
-        setIsChargebeeLoaded(true);
+      const chargebee = window.Chargebee as typeof Chargebee | undefined;
+      if (chargebee) {
+        chargebee.init({
+          site: process.env.NEXT_PUBLIC_CHARGEBEE_SITE!,
+          publishableKey: process.env.NEXT_PUBLIC_CHARGEBEE_PUBLISHABLE_KEY!,
+        });
+        setIsChargebeeInited(true);
         clearInterval(interval);
       }
     }, 1000);
@@ -23,5 +20,5 @@ export const useChargebee = () => {
     };
   }, []);
 
-  return chargebee;
+  return isChargebeeInited;
 };

@@ -14,7 +14,7 @@ interface Props {
 }
 
 const PlansList: React.FC<Props> = ({ plans }) => {
-  const Chargebee = useChargebee();
+  const chargebeeInited = useChargebee();
   const [user] = useUser();
   const cardRef = useRef<ChargebeeComponents>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceResponse | null>(
@@ -91,9 +91,6 @@ const PlansList: React.FC<Props> = ({ plans }) => {
     }
   };
 
-  // Wait for Chargebee to load
-  if (!Chargebee) return null;
-
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8">
@@ -135,45 +132,49 @@ const PlansList: React.FC<Props> = ({ plans }) => {
         )}
       </div>
 
-      {selectedPrice && (
-        // Render Stripe Card Element here
-        <div className="border rounded-md p-4 max-w-lg">
-          <h2 className="text-xl font-bold">
-            Subscribe to {selectedPrice.name}
-          </h2>
-          <p className="mt-4">
-            {(selectedPrice.price ?? 0) / 100} {selectedPrice.currency_code} /{" "}
-            {selectedPrice.period} {selectedPrice.period_unit}
-          </p>
+      {selectedPrice && !chargebeeInited ? (
+        <div>Loading Chargebee SDK...</div>
+      ) : (
+        selectedPrice && (
+          // Render Chargebee Card Element here
+          <div className="border rounded-md p-4 max-w-lg">
+            <h2 className="text-xl font-bold">
+              Subscribe to {selectedPrice.name}
+            </h2>
+            <p className="mt-4">
+              {(selectedPrice.price ?? 0) / 100} {selectedPrice.currency_code} /{" "}
+              {selectedPrice.period} {selectedPrice.period_unit}
+            </p>
 
-          <div className="mt-4">
-            <h1 className="font-semibold mb-4">Card Details</h1>
-            <CardComponent
-              ref={cardRef}
-              onChange={(e: any) => {
-                setProgressStatus((prev) => {
-                  if (prev === "subscription-in-progress") return prev;
-                  return e.complete && !e.error
-                    ? "complete-card"
-                    : "incomplete-card";
-                });
-              }}
-            />
-          </div>
+            <div className="mt-4">
+              <h1 className="font-semibold mb-4">Card Details</h1>
+              <CardComponent
+                ref={cardRef}
+                onChange={(e: any) => {
+                  setProgressStatus((prev) => {
+                    if (prev === "subscription-in-progress") return prev;
+                    return e.complete && !e.error
+                      ? "complete-card"
+                      : "incomplete-card";
+                  });
+                }}
+              />
+            </div>
 
-          <div className="mt-4">
-            <button
-              className="block bg-blue-500 text-white p-2 rounded-md text-center w-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
-              onClick={handleSubscribe}
-              disabled={
-                progressStatus === "incomplete-card" ||
-                progressStatus === "subscription-in-progress"
-              }
-            >
-              Subscribe
-            </button>
+            <div className="mt-4">
+              <button
+                className="block bg-blue-500 text-white p-2 rounded-md text-center w-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+                onClick={handleSubscribe}
+                disabled={
+                  progressStatus === "incomplete-card" ||
+                  progressStatus === "subscription-in-progress"
+                }
+              >
+                Subscribe
+              </button>
+            </div>
           </div>
-        </div>
+        )
       )}
     </div>
   );
