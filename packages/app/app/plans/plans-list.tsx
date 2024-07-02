@@ -5,7 +5,7 @@ import { CardComponent } from "@chargebee/chargebee-js-react-wrapper";
 import ChargebeeComponents from "@chargebee/chargebee-js-react-wrapper/dist/components/ComponentGroup";
 import { PaymentIntent } from "@chargebee/chargebee-js-types";
 import { useUser } from "@/hooks/use-user";
-import { useChargebee } from "@/hooks/use-chargebee";
+import { useChargebeeContext } from "@/context/chargebee.context";
 import { axiosApi } from "@/utils/axios";
 import { PlanResponse, PriceResponse, SubscriptionResponse } from "./types";
 
@@ -14,7 +14,7 @@ interface Props {
 }
 
 const PlansList: React.FC<Props> = ({ plans }) => {
-  const chargebeeInited = useChargebee();
+  const { isChargebeeInited } = useChargebeeContext();
   const [user] = useUser();
   const cardRef = useRef<ChargebeeComponents>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceResponse | null>(
@@ -132,7 +132,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
         )}
       </div>
 
-      {selectedPrice && !chargebeeInited ? (
+      {selectedPrice && !isChargebeeInited ? (
         <div>Loading Chargebee SDK...</div>
       ) : (
         selectedPrice && (

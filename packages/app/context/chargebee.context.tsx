@@ -1,9 +1,19 @@
-import { useEffect, useState } from "react";
+import { createContext, useContext, useEffect, useState } from "react";
 import { Chargebee } from "@chargebee/chargebee-js-types";
 
-export const useChargebee = () => {
+const ChargebeeContext = createContext<{
+  isChargebeeInited: boolean;
+}>({
+  isChargebeeInited: false,
+});
+
+export const ChargebeeProvider: React.FC<{
+  children: React.ReactNode;
+}> = ({ children }) => {
   const [isChargebeeInited, setIsChargebeeInited] = useState(false);
+
   useEffect(() => {
+    if (isChargebeeInited) return;
     const interval = setInterval(() => {
       const chargebee = window.Chargebee as typeof Chargebee | undefined;
       if (chargebee) {
@@ -18,7 +28,15 @@ export const useChargebee = () => {
     return () => {
       clearInterval(interval);
     };
-  }, []);
+  }, [isChargebeeInited]);
 
-  return isChargebeeInited;
+  return (
+    <ChargebeeContext.Provider value={{ isChargebeeInited }}>
+      {children}
+    </ChargebeeContext.Provider>
+  );
+};
+
+export const useChargebeeContext = () => {
+  return useContext(ChargebeeContext);
 };

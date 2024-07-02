@@ -1,13 +1,12 @@
 "use client";
 
-import React, { useEffect } from "react";
-import { useChargebee } from "@/hooks/use-chargebee";
+import React from "react";
+import { ChargebeeProvider } from "@/context/chargebee.context";
 
 const AppProviders: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  useChargebee();
-  return <>{children}</>;
+  return <ChargebeeProvider>{children}</ChargebeeProvider>;
 };
 
 export default AppProviders;
