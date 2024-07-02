@@ -1,28 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
-import { CardElement, useElements, useStripe } from "@stripe/react-stripe-js";
-import { PaymentIntent, PaymentIntentResult } from "@stripe/stripe-js";
+import React, { useEffect, useRef, useState } from "react";
+import { CardComponent } from "@chargebee/chargebee-js-react-wrapper";
+import ChargebeeComponents from "@chargebee/chargebee-js-react-wrapper/dist/components/ComponentGroup";
+import { PaymentIntent } from "@chargebee/chargebee-js-types";
 import { useUser } from "@/hooks/use-user";
+import { useChargebee } from "@/hooks/use-chargebee";
 import { axiosApi } from "@/utils/axios";
-import {
-  PaymentIntentResponse,
-  PlanResponse,
-  PriceResponse,
-  SubscriptionResponse,
-} from "./types";
+import { PlanResponse, PriceResponse, SubscriptionResponse } from "./types";
 
 interface Props {
   plans: PlanResponse[];
 }
 
 const PlansList: React.FC<Props> = ({ plans }) => {
+  const Chargebee = useChargebee();
+  const [user] = useUser();
+  const cardRef = useRef<ChargebeeComponents>(null);
   const [selectedPrice, setSelectedPrice] = useState<PriceResponse | null>(
     null
   );
-  const stripe = useStripe();
-  const elements = useElements();
-  const [user] = useUser();
+  const [progressStatus, setProgressStatus] = useState<
+    | "incomplete-card"
+    | "complete-card"
+    | "subscription-in-progress"
+    | "subscription-completed"
+    | "subscription-failed"
+  >("incomplete-card");
+
+  useEffect(() => {
+    console.log("Progress Status:", progressStatus);
+  }, [progressStatus]);
 
   const handleSubscribe = async () => {
     if (!user) {
@@ -36,88 +44,55 @@ const PlansList: React.FC<Props> = ({ plans }) => {
     // Subscribe the user to the selected plan
     console.log("Subscribing to plan", selectedPrice);
 
-    // Use the Stripe SDK to create a payment method
-    if (!stripe || !elements) {
-      console.error("Stripe not initialized");
-      return;
-    }
-
-    const cardElement = elements.getElement(CardElement);
-
-    if (!cardElement) {
+    if (!cardRef.current) {
       console.error("Card Element not found");
       return;
     }
 
+    const cardElement = cardRef.current;
+
     try {
-      const paymentMethodResult = await stripe.createPaymentMethod({
-        type: "card",
-        card: cardElement,
-      });
-
-      if (paymentMethodResult.error) {
-        console.error(paymentMethodResult.error.message);
-        return;
-      }
-
-      console.log("Payment Method created successfully:", paymentMethodResult);
-
+      setProgressStatus("subscription-in-progress");
       // Send the payment method to the server to create a payment intent
-      const { data } = await axiosApi.post<PaymentIntentResponse>(
+      const { data: paymentIntent } = await axiosApi.post<PaymentIntent>(
         "/chargebee/payment-intent",
         {
-          paymentMethodId: paymentMethodResult.paymentMethod.id,
-          priceId: selectedPrice.id,
           email: user.email,
+          priceId: selectedPrice.id,
         }
       );
 
-      console.log("Payment intent created:", data);
+      console.log("Payment intent created:", paymentIntent);
 
-      let paymentIntentResult:
-        | PaymentIntentResult
-        | { paymentIntent: Partial<PaymentIntent>; error?: undefined }
-        | null = null;
+      const authorizedPaymentIntent = await cardElement.authorizeWith3ds(
+        paymentIntent,
+        {},
+        {}
+      );
 
-      if (data.requires_action) {
-        paymentIntentResult = await stripe.handleCardAction(data.client_secret);
-      } else if (data.status === "requires_capture") {
-        paymentIntentResult = {
-          paymentIntent: {
-            id: data.id,
-            client_secret: data.client_secret,
-            status: data.status,
-          },
-        };
-      } else {
-        console.error("Invalid Payment Intent status:", data.status);
-        return;
-      }
-      if (paymentIntentResult.error) {
-        console.error(
-          "Failed to handle card action:",
-          paymentIntentResult.error
-        );
-        return;
-      }
-
-      console.log("Payment intent result:", paymentIntentResult);
+      console.log("Authorized Payment Intent:", authorizedPaymentIntent);
 
       // Call Subscribe API to complete the subscription
       const subscriptionResponse = await axiosApi.post<SubscriptionResponse>(
         "/chargebee/subscription",
         {
-          paymentIntentId: paymentIntentResult.paymentIntent.id,
-          priceId: selectedPrice.id,
           email: user.email,
+          priceId: selectedPrice.id,
+          paymentIntentId: paymentIntent.id,
         }
       );
-
       console.log("Subscription completed:", subscriptionResponse.data);
+      setProgressStatus("subscription-completed");
+      cardElement.clear();
     } catch (error) {
-      console.error("Failed to create subscription:", error);
+      console.log("Failed to create subscription:");
+      console.dir(error);
+      setProgressStatus("subscription-failed");
     }
   };
+
+  // Wait for Chargebee to load
+  if (!Chargebee) return null;
 
   return (
     <div className="space-y-8">
@@ -173,13 +148,27 @@ const PlansList: React.FC<Props> = ({ plans }) => {
 
           <div className="mt-4">
             <h1 className="font-semibold mb-4">Card Details</h1>
-            <CardElement />
+            <CardComponent
+              ref={cardRef}
+              onChange={(e: any) => {
+                setProgressStatus((prev) => {
+                  if (prev === "subscription-in-progress") return prev;
+                  return e.complete && !e.error
+                    ? "complete-card"
+                    : "incomplete-card";
+                });
+              }}
+            />
           </div>
 
           <div className="mt-4">
             <button
-              className="block bg-blue-500 text-white p-2 rounded-md text-center w-full hover:bg-blue-600"
+              className="block bg-blue-500 text-white p-2 rounded-md text-center w-full hover:bg-blue-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
               onClick={handleSubscribe}
+              disabled={
+                progressStatus === "incomplete-card" ||
+                progressStatus === "subscription-in-progress"
+              }
             >
               Subscribe
             </button>

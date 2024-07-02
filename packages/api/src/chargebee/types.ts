@@ -42,13 +42,6 @@ export interface PlanResponse {
   prices: PriceResponse[];
 }
 
-export interface PaymentIntentResponse {
-  id: string;
-  client_secret: string;
-  requires_action: boolean;
-  status: string;
-}
-
 export interface SubscriptionResponse {
   id: string;
   status: string;

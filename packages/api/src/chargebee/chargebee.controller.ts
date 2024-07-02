@@ -1,10 +1,7 @@
 import { Body, Controller, Get, Post } from '@nestjs/common';
 import { ChargebeeService } from './chargebee.service';
-import {
-  PaymentIntentResponse,
-  PlanResponse,
-  SubscriptionResponse,
-} from './types';
+import { PaymentIntent } from 'chargebee-typescript/lib/resources';
+import { PlanResponse, SubscriptionResponse } from './types';
 
 @Controller('chargebee')
 export class ChargebeeController {
@@ -17,8 +14,8 @@ export class ChargebeeController {
 
   @Post('payment-intent')
   createPaymentIntent(
-    @Body() body: { paymentMethodId: string; priceId: string; email: string },
-  ): Promise<PaymentIntentResponse> {
+    @Body() body: { email: string; priceId: string },
+  ): Promise<PaymentIntent> {
     return this.chargebeeService.createPaymentIntent(body);
   }
 

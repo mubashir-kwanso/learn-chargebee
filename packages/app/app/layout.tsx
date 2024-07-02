@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Script from "next/script";
 import { Inter } from "next/font/google";
 import AppProviders from "./app-providers";
 import "./globals.css";
@@ -17,6 +18,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <Script src="https://js.chargebee.com/v2/chargebee.js"></Script>
       <body className={inter.className}>
         <AppProviders>{children}</AppProviders>
       </body>

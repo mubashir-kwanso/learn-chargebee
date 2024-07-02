@@ -1,17 +1,22 @@
 "use client";
 
-import React from "react";
-import { Elements } from "@stripe/react-stripe-js";
-import { loadStripe } from "@stripe/stripe-js";
-
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
-);
+import React, { useEffect } from "react";
+import { useChargebee } from "@/hooks/use-chargebee";
 
 const AppProviders: React.FC<{
   children: React.ReactNode;
 }> = ({ children }) => {
-  return <Elements stripe={stripePromise}>{children}</Elements>;
+  const Chargebee = useChargebee();
+  useEffect(() => {
+    if (Chargebee) {
+      Chargebee.init({
+        site: process.env.NEXT_PUBLIC_CHARGEBEE_SITE!,
+        publishableKey: process.env.NEXT_PUBLIC_CHARGEBEE_PUBLISHABLE_KEY!,
+      });
+    }
+  }, [Chargebee]);
+
+  return <>{children}</>;
 };
 
 export default AppProviders;

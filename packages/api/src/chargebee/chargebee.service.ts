@@ -10,14 +10,10 @@ import {
   Estimate,
   Item,
   ItemPrice,
+  PaymentIntent,
   Subscription,
 } from 'chargebee-typescript/lib/resources';
-import { StripeService } from 'src/stripe/stripe.service';
-import {
-  PaymentIntentResponse,
-  PlanResponse,
-  SubscriptionResponse,
-} from './types';
+import { PlanResponse, SubscriptionResponse } from './types';
 import { CHARGEBEE_PROVIDER } from './constants';
 
 @Injectable()
@@ -25,7 +21,6 @@ export class ChargebeeService {
   constructor(
     @Inject(CHARGEBEE_PROVIDER)
     private readonly chargebee: ChargeBee,
-    private readonly stripeService: StripeService,
     private readonly configService: ConfigService,
   ) {}
 
@@ -67,22 +62,20 @@ export class ChargebeeService {
   }
 
   async createPaymentIntent({
-    paymentMethodId,
-    priceId,
     email,
+    priceId,
   }: {
-    paymentMethodId: string;
-    priceId: string;
     email: string;
-  }): Promise<PaymentIntentResponse> {
-    // Create Stripe Customer
-    const customer = await this.stripeService.createOrUpdateCustomer({
+    priceId: string;
+  }): Promise<PaymentIntent> {
+    // Create Chargbee Customer
+    const customer = await this.createOrUpdateCustomer({
       email,
     });
 
     // Calculate amount from Chargebee Estimate API
     const { estimate } = (await this.chargebee.estimate
-      .create_sub_item_estimate({
+      .create_sub_item_for_customer_estimate(customer.id, {
         subscription_items: [
           {
             item_price_id: priceId,
@@ -97,31 +90,22 @@ export class ChargebeeService {
       throw new InternalServerErrorException('Failed to calculate estimate');
     }
 
-    // Create Stripe PaymentIntent
-    const paymentIntent = await this.stripeService.createPaymentIntent({
-      customer: customer.id,
-      payment_method: paymentMethodId,
-      currency: estimate.invoice_estimate.currency_code,
-      amount: estimate.invoice_estimate.total ?? 0,
-      confirmation_method: 'manual',
-      capture_method: 'manual',
-      setup_future_usage: 'off_session',
-      confirm: true,
-      return_url: 'http://localhost:3000',
-    });
-
-    if (!paymentIntent.client_secret) {
-      throw new InternalServerErrorException('Failed to create payment intent');
-    }
-
-    return {
-      id: paymentIntent.id,
-      client_secret: paymentIntent.client_secret,
-      requires_action:
-        paymentIntent.status === 'requires_action' &&
-        paymentIntent.next_action?.type === 'use_stripe_sdk',
-      status: paymentIntent.status,
+    // Create Chargebee PaymentIntent
+    const { payment_intent } = (await this.chargebee.payment_intent
+      .create({
+        customer_id: customer.id,
+        payment_method_type: 'card',
+        currency_code: estimate.invoice_estimate.currency_code,
+        amount: estimate.invoice_estimate.total ?? 0,
+        gateway_account_id: this.configService.get(
+          'STRIPE_GATWEWAY_ACCOUNT_ID',
+        ),
+      })
+      .request()) as {
+      payment_intent: PaymentIntent;
     };
+
+    return payment_intent;
   }
 
   async createSubscription({
@@ -144,10 +128,7 @@ export class ChargebeeService {
           },
         ],
         payment_intent: {
-          gw_token: paymentIntentId,
-          gateway_account_id: this.configService.get(
-            'STRIPE_GATWEWAY_ACCOUNT_ID',
-          ),
+          id: paymentIntentId,
         },
       })
       .request()) as {
