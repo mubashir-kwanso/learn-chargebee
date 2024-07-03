@@ -1,11 +1,22 @@
-import { Body, Controller, Get, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  Headers,
+  Post,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
+import { Event, PaymentIntent } from 'chargebee-typescript/lib/resources';
 import { ChargebeeService } from './chargebee.service';
-import { PaymentIntent } from 'chargebee-typescript/lib/resources';
 import { PlanResponse, SubscriptionResponse } from './types';
 
 @Controller('chargebee')
 export class ChargebeeController {
-  constructor(private readonly chargebeeService: ChargebeeService) {}
+  constructor(
+    private readonly configService: ConfigService,
+    private readonly chargebeeService: ChargebeeService,
+  ) {}
 
   @Get('plans')
   getPlansPrices(): Promise<PlanResponse[]> {
@@ -24,5 +35,22 @@ export class ChargebeeController {
     @Body() body: { paymentIntentId: string; priceId: string; email: string },
   ): Promise<SubscriptionResponse> {
     return this.chargebeeService.createSubscription(body);
+  }
+
+  @Post('webhook')
+  handleWebhook(
+    @Headers('Authorization') authorization: string,
+    @Body() event: Event,
+  ): Promise<{
+    status: 'success';
+    message: string;
+  }> {
+    if (
+      authorization !==
+      'Basic ' + this.configService.get('CHARGEBEE_WEBHOOK_BASIC_AUTH')
+    ) {
+      throw new UnauthorizedException('Unauthorized');
+    }
+    return this.chargebeeService.handleWebhook(event);
   }
 }

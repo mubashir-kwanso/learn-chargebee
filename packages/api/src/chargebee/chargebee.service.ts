@@ -8,6 +8,7 @@ import { ChargeBee } from 'chargebee-typescript';
 import {
   Customer,
   Estimate,
+  Event,
   Item,
   ItemPrice,
   PaymentIntent,
@@ -167,5 +168,16 @@ export class ChargebeeService {
       .create(params)
       .request()) as { customer: Customer };
     return newCustomer.customer;
+  }
+
+  async handleWebhook(
+    event: Event,
+  ): Promise<{ status: 'success'; message: string }> {
+    // TODO: Handle the webhook event
+    console.log('Webhook received:', event);
+    return {
+      status: 'success',
+      message: 'Webhook handled successfully',
+    };
   }
 }
