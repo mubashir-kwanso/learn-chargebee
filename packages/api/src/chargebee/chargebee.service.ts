@@ -174,7 +174,10 @@ export class ChargebeeService {
     event: Event,
   ): Promise<{ status: 'success'; message: string }> {
     // TODO: Handle the webhook event
-    console.log('Webhook received:', event);
+    console.log('Webhook received:');
+    console.dir(event, {
+      depth: Infinity,
+    });
     return {
       status: 'success',
       message: 'Webhook handled successfully',
