@@ -1,25 +1,34 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useMutation } from "@apollo/client";
 import { CardComponent } from "@chargebee/chargebee-js-react-wrapper";
 import ChargebeeComponents from "@chargebee/chargebee-js-react-wrapper/dist/components/ComponentGroup";
 import { PaymentIntent } from "@chargebee/chargebee-js-types";
 import { useUser } from "@/hooks/use-user";
 import { useChargebeeContext } from "@/context/chargebee.context";
-import { axiosApi } from "@/utils/axios";
-import { PlanResponse, PriceResponse, SubscriptionResponse } from "./types";
+import { GetSubscriptionPlansQuery } from "@/graphql/__generated__/graphql";
+import {
+  CREATE_CUSTOMER,
+  CREATE_PAYMENT_INTENT,
+  CREATE_SUBSCRIPTION,
+} from "@/graphql/queries/subscriptions";
+
+const subsidiaryId = "4bcb8602-e6b0-4023-ae4a-8d8f5d3f4b58";
+
+type SubscriptionPlan = GetSubscriptionPlansQuery["plans"][0];
+type SubscriptionPlanPrice = SubscriptionPlan["prices"][0];
 
 interface Props {
-  plans: PlanResponse[];
+  plans: SubscriptionPlan[];
 }
 
 const PlansList: React.FC<Props> = ({ plans }) => {
   const { isChargebeeInited } = useChargebeeContext();
   const [user] = useUser();
   const cardRef = useRef<ChargebeeComponents>(null);
-  const [selectedPrice, setSelectedPrice] = useState<PriceResponse | null>(
-    null
-  );
+  const [selectedPrice, setSelectedPrice] =
+    useState<SubscriptionPlanPrice | null>(null);
   const [progressStatus, setProgressStatus] = useState<
     | "incomplete-card"
     | "complete-card"
@@ -27,6 +36,9 @@ const PlansList: React.FC<Props> = ({ plans }) => {
     | "subscription-completed"
     | "subscription-failed"
   >("incomplete-card");
+  const [createCustomer] = useMutation(CREATE_CUSTOMER);
+  const [createPaymentIntent] = useMutation(CREATE_PAYMENT_INTENT);
+  const [createSubscription] = useMutation(CREATE_SUBSCRIPTION);
 
   useEffect(() => {
     console.log("Progress Status:", progressStatus);
@@ -53,35 +65,68 @@ const PlansList: React.FC<Props> = ({ plans }) => {
 
     try {
       setProgressStatus("subscription-in-progress");
-      // Send the payment method to the server to create a payment intent
-      const { data: paymentIntent } = await axiosApi.post<PaymentIntent>(
-        "/chargebee/payment-intent",
-        {
-          email: user.email,
-          priceId: selectedPrice.id,
-        }
-      );
+
+      // Create Customer
+      await createCustomer({
+        variables: {
+          input: {
+            email: user.email,
+            firstName: "Mubashir",
+            lastName: "Hassan",
+            subsidiaryId,
+            billingAddress: {
+              line1: "Street 1",
+              city: "Lahore",
+              state: "Punjab",
+              country: "PK",
+            },
+          },
+        },
+      });
+
+      // Create Payment Intent
+      const { data: createPaymentIntentData } = await createPaymentIntent({
+        variables: {
+          input: {
+            subsidiaryId,
+            priceId: selectedPrice.id,
+          },
+        },
+      });
+      if (!createPaymentIntentData) {
+        throw new Error("Failed to create payment intent");
+      }
+      const { paymentIntent } = createPaymentIntentData;
 
       console.log("Payment intent created:", paymentIntent);
 
       const authorizedPaymentIntent = await cardElement.authorizeWith3ds(
-        paymentIntent,
+        paymentIntent as PaymentIntent,
         {},
         {}
       );
 
       console.log("Authorized Payment Intent:", authorizedPaymentIntent);
 
-      // Call Subscribe API to complete the subscription
-      const subscriptionResponse = await axiosApi.post<SubscriptionResponse>(
-        "/chargebee/subscription",
-        {
-          email: user.email,
-          priceId: selectedPrice.id,
-          paymentIntentId: paymentIntent.id,
-        }
+      // Create Subscription
+      const { data: createSubscriptionData } = await createSubscription({
+        variables: {
+          input: {
+            subsidiaryId,
+            priceId: selectedPrice.id,
+            paymentIntentId: paymentIntent.id,
+          },
+        },
+      });
+
+      if (!createSubscriptionData) {
+        throw new Error("Failed to create subscription");
+      }
+
+      console.log(
+        "Subscription completed:",
+        createSubscriptionData.subscription
       );
-      console.log("Subscription completed:", subscriptionResponse.data);
       setProgressStatus("subscription-completed");
       cardElement.clear();
     } catch (error) {
@@ -100,7 +145,9 @@ const PlansList: React.FC<Props> = ({ plans }) => {
             className="border rounded-md p-4 flex flex-col justify-between"
           >
             <div>
-              <h2 className="text-xl font-bold">{plan.external_name}</h2>
+              <h2 className="text-xl font-bold">
+                {plan.external_name ?? plan.name}
+              </h2>
             </div>
 
             <div>
@@ -139,7 +186,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
           // Render Chargebee Card Element here
           <div className="border rounded-md p-4 max-w-lg">
             <h2 className="text-xl font-bold">
-              Subscribe to {selectedPrice.name}
+              Subscribe to {selectedPrice.external_name ?? selectedPrice.name}
             </h2>
             <p className="mt-4">
               {(selectedPrice.price ?? 0) / 100} {selectedPrice.currency_code} /{" "}

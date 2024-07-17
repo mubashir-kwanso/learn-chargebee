@@ -1,7 +1,7 @@
 "use client";
 
-import { useUser } from "@/hooks/use-user";
 import { useRouter } from "next/navigation";
+import { useUser } from "@/hooks/use-user";
 
 export default function Home() {
   const [user, setUser] = useUser();

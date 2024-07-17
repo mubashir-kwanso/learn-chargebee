@@ -1,16 +1,18 @@
-import PlansList from "./plans-list";
-import { PlanResponse } from "./types";
+"use client";
 
-export default async function Plans() {
-  const plans: PlanResponse[] = await fetch(
-    `${process.env.NEXT_PUBLIC_API_BASE_URL}/chargebee/plans`
-  ).then((res) => res.json());
+import { useQuery } from "@apollo/client";
+import { GET_SUBSCRIPTION_PLANS } from "@/graphql/queries/subscriptions";
+import PlansList from "./plans-list";
+
+export default function Plans() {
+  const { data, loading, error } = useQuery(GET_SUBSCRIPTION_PLANS);
 
   return (
     <div className="max-w-screen-xl mx-auto p-8">
       <h1 className="text-3xl font-bold text-center">Plans</h1>
-
-      <PlansList plans={plans} />
+      {loading && <div>Loading...</div>}
+      {error && <div>Error: {error.message}</div>}
+      {data?.plans && <PlansList plans={data.plans} />}
     </div>
   );
 }
