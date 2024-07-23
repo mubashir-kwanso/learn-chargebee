@@ -14,7 +14,7 @@ import {
   CREATE_SUBSCRIPTION,
 } from "@/graphql/queries/subscriptions";
 
-const subsidiaryId = "4bcb8602-e6b0-4023-ae4a-8d8f5d3f4b58";
+const subsidiaryId = "6e639500-977d-40f8-91c6-ee4f3efea092";
 
 type SubscriptionPlan = GetSubscriptionPlansQuery["plans"][0];
 type SubscriptionPlanPrice = SubscriptionPlan["prices"][0];
@@ -70,10 +70,10 @@ const PlansList: React.FC<Props> = ({ plans }) => {
       await createCustomer({
         variables: {
           input: {
+            subsidiaryId,
             email: user.email,
             firstName: "Mubashir",
             lastName: "Hassan",
-            subsidiaryId,
             billingAddress: {
               line1: "Street 1",
               city: "Lahore",
