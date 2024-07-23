@@ -281,12 +281,12 @@ export type CreateOrganizationConfigInput = {
 
 export type CreateOrganizationInput = {
   name: Scalars['String']['input'];
+  priceId?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
-  stripePlanId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreatePaymentIntentInput = {
-  priceId: Scalars['String']['input'];
+  priceId?: InputMaybe<Scalars['String']['input']>;
   subsidiaryId: Scalars['String']['input'];
 };
 
@@ -1275,9 +1275,9 @@ export type Organization = {
   name: Scalars['String']['output'];
   organizationConfigs?: Maybe<Array<OrganizationConfigs>>;
   organizationToUsers?: Maybe<Array<Maybe<OrganizationToUser>>>;
+  priceId?: Maybe<Scalars['String']['output']>;
   roles?: Maybe<Array<Maybe<Role>>>;
   slug: Scalars['String']['output'];
-  stripePlanId?: Maybe<Scalars['String']['output']>;
   subsidiaries?: Maybe<Array<Subsidiary>>;
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
   workflows?: Maybe<Array<WorkFlow>>;
@@ -1776,8 +1776,8 @@ export type SignUpUserInput = {
   email: Scalars['String']['input'];
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
+  priceId?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
-  stripePlanId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SignupUserResponse = {
@@ -2049,7 +2049,7 @@ export type UpdateOrganizationConfigInput = {
 export type UpdateOrganizationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   organizationId: Scalars['String']['input'];
-  stripePlanId?: InputMaybe<Scalars['String']['input']>;
+  priceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdatePasswordInputForProfile = {
