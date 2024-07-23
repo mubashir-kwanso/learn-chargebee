@@ -113,7 +113,6 @@ const PlansList: React.FC<Props> = ({ plans }) => {
         variables: {
           input: {
             subsidiaryId,
-            priceId: selectedPrice.id,
             paymentIntentId: paymentIntent.id,
           },
         },

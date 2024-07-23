@@ -335,16 +335,16 @@ export type CreateSourcePayload = {
 
 export type CreateSubscriptionInput = {
   paymentIntentId: Scalars['String']['input'];
-  priceId: Scalars['String']['input'];
   subsidiaryId: Scalars['String']['input'];
 };
 
 export type CreateSubsidiaryInput = {
   address?: InputMaybe<CreateAddressInput>;
-  contact: Scalars['String']['input'];
+  contact?: InputMaybe<Scalars['String']['input']>;
+  ein?: InputMaybe<Scalars['String']['input']>;
   name: Scalars['String']['input'];
   organizationId?: InputMaybe<Scalars['String']['input']>;
-  stripePlanId?: InputMaybe<Scalars['String']['input']>;
+  priceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type CreateTaskInput = {
@@ -1471,13 +1471,6 @@ export type PlanDto = {
   usage_type: Scalars['String']['output'];
 };
 
-export type PublicSubsidiaryDetailsPayload = {
-  __typename?: 'PublicSubsidiaryDetailsPayload';
-  organization: OrganizationPublic;
-  subscriptionId?: Maybe<Scalars['String']['output']>;
-  subscriptionStatus?: Maybe<Scalars['String']['output']>;
-};
-
 export type Query = {
   __typename?: 'Query';
   getAllLocationLogs: LocationsLogsPayload;
@@ -1500,7 +1493,6 @@ export type Query = {
   getOrganization: Organization;
   getOrganizationRoles: Array<Role>;
   getOrganizationSubsidiaries: Array<Subsidiary>;
-  getPublicSubsidiaryDetails: PublicSubsidiaryDetailsPayload;
   getRoleById: GetRoleByIdResponse;
   getStripeCustomer: StripeCustomer;
   getStripePlans: StripeList;
@@ -1623,11 +1615,6 @@ export type QueryGetOrganizationRolesArgs = {
 
 export type QueryGetOrganizationSubsidiariesArgs = {
   organizationId: Scalars['String']['input'];
-};
-
-
-export type QueryGetPublicSubsidiaryDetailsArgs = {
-  subsidiaryId: Scalars['String']['input'];
 };
 
 
@@ -1974,6 +1961,7 @@ export type Subsidiary = {
   createdAt: Scalars['DateTime']['output'];
   customerId?: Maybe<Scalars['String']['output']>;
   deletedAt?: Maybe<Scalars['DateTime']['output']>;
+  ein?: Maybe<Scalars['String']['output']>;
   id: Scalars['ID']['output'];
   locations: Array<Location>;
   name: Scalars['String']['output'];
@@ -2092,8 +2080,9 @@ export type UpdateRoleInput = {
 
 export type UpdateSubsidiaryInput = {
   contact?: InputMaybe<Scalars['String']['input']>;
+  ein?: InputMaybe<Scalars['String']['input']>;
   name?: InputMaybe<Scalars['String']['input']>;
-  stripePlanId?: InputMaybe<Scalars['String']['input']>;
+  priceId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdateTaskInput = {
