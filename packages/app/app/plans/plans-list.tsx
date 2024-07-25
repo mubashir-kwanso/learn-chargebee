@@ -14,7 +14,7 @@ import {
   CREATE_SUBSCRIPTION,
 } from "@/graphql/queries/subscriptions";
 
-const subsidiaryId = "6e639500-977d-40f8-91c6-ee4f3efea092";
+const subsidiaryId = "ef5b939a-4f39-4d17-b9ab-bbb8a1dd7131";
 
 type SubscriptionPlan = GetSubscriptionPlansQuery["plans"][0];
 type SubscriptionPlanPrice = SubscriptionPlan["prices"][0];
@@ -79,6 +79,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
               city: "Lahore",
               state: "Punjab",
               country: "PK",
+              zip: "54000",
             },
           },
         },
