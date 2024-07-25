@@ -91,6 +91,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
           input: {
             subsidiaryId,
             priceId: selectedPrice.id,
+            coupon: "50%OFF",
           },
         },
       });
@@ -115,6 +116,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
           input: {
             subsidiaryId,
             paymentIntentId: paymentIntent.id,
+            coupon: "50%OFF",
           },
         },
       });
