@@ -132,6 +132,7 @@ export type BillingAddress = {
   line1: Scalars['String']['input'];
   line2?: InputMaybe<Scalars['String']['input']>;
   state: Scalars['String']['input'];
+  zip: Scalars['String']['input'];
 };
 
 export type BillingDetails = {
@@ -194,6 +195,17 @@ export type CardNetworksDto = {
   __typename?: 'CardNetworksDto';
   available: Array<Scalars['String']['output']>;
   preferred?: Maybe<Scalars['String']['output']>;
+};
+
+export type CardResponse = {
+  __typename?: 'CardResponse';
+  brand: Scalars['String']['output'];
+  expiry_month: Scalars['Float']['output'];
+  expiry_year: Scalars['Float']['output'];
+  first_name?: Maybe<Scalars['String']['output']>;
+  iin: Scalars['String']['output'];
+  last4: Scalars['String']['output'];
+  last_name?: Maybe<Scalars['String']['output']>;
 };
 
 export type CardThreeDSecureDto = {
@@ -286,6 +298,7 @@ export type CreateOrganizationInput = {
 };
 
 export type CreatePaymentIntentInput = {
+  coupon?: InputMaybe<Scalars['String']['input']>;
   priceId?: InputMaybe<Scalars['String']['input']>;
   subsidiaryId: Scalars['String']['input'];
 };
@@ -334,6 +347,7 @@ export type CreateSourcePayload = {
 };
 
 export type CreateSubscriptionInput = {
+  coupon?: InputMaybe<Scalars['String']['input']>;
   paymentIntentId: Scalars['String']['input'];
   subsidiaryId: Scalars['String']['input'];
 };
@@ -463,10 +477,51 @@ export type GetCountsPayload = {
   subsidiariesCount?: Maybe<Scalars['Float']['output']>;
 };
 
+export type GetCustomerSubscriptionsResponse = {
+  __typename?: 'GetCustomerSubscriptionsResponse';
+  activated_at?: Maybe<Scalars['Float']['output']>;
+  billing_period?: Maybe<Scalars['Float']['output']>;
+  billing_period_unit?: Maybe<Scalars['String']['output']>;
+  created_at?: Maybe<Scalars['Float']['output']>;
+  customer_id: Scalars['String']['output'];
+  due_invoices_count?: Maybe<Scalars['Float']['output']>;
+  due_since?: Maybe<Scalars['Float']['output']>;
+  id: Scalars['String']['output'];
+  next_billing_at?: Maybe<Scalars['Float']['output']>;
+  object?: Maybe<Scalars['String']['output']>;
+  started_at?: Maybe<Scalars['Float']['output']>;
+  status: Scalars['String']['output'];
+  subscription_items?: Maybe<Array<SubscriptionItemResponse>>;
+  updated_at?: Maybe<Scalars['Float']['output']>;
+};
+
+export type GetInvoiceAsPdfResponse = {
+  __typename?: 'GetInvoiceAsPdfResponse';
+  download_url: Scalars['String']['output'];
+  mime_type?: Maybe<Scalars['String']['output']>;
+  valid_till: Scalars['Float']['output'];
+};
+
+export type GetInvoiceResponse = {
+  __typename?: 'GetInvoiceResponse';
+  amount_paid?: Maybe<Scalars['Float']['output']>;
+  due_date?: Maybe<Scalars['Float']['output']>;
+  id: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  total?: Maybe<Scalars['Float']['output']>;
+};
+
 export type GetLocationsByWorkflowPayload = {
   __typename?: 'GetLocationsByWorkflowPayload';
   count: Scalars['Float']['output'];
   locations?: Maybe<Array<Maybe<Location>>>;
+};
+
+export type GetPaymentSourceResponse = {
+  __typename?: 'GetPaymentSourceResponse';
+  card: CardResponse;
+  created_at: Scalars['Float']['output'];
+  id: Scalars['String']['output'];
 };
 
 export type GetRoleByIdInput = {
@@ -1471,6 +1526,13 @@ export type PlanDto = {
   usage_type: Scalars['String']['output'];
 };
 
+export type PublicSubsidiaryDetailsPayload = {
+  __typename?: 'PublicSubsidiaryDetailsPayload';
+  organization: OrganizationPublic;
+  subscriptionId?: Maybe<Scalars['String']['output']>;
+  subscriptionStatus?: Maybe<Scalars['String']['output']>;
+};
+
 export type Query = {
   __typename?: 'Query';
   getAllLocationLogs: LocationsLogsPayload;
@@ -1485,6 +1547,9 @@ export type Query = {
   getBibIdScanSession: IdScanSessionPayload;
   getChartData: Array<ChartDataPayload>;
   getConfigByOrgId: Array<OrganizationConfigs>;
+  getCustomerSubscriptions: Array<GetCustomerSubscriptionsResponse>;
+  getInvoice: GetInvoiceResponse;
+  getInvoiceAsPdf: GetInvoiceAsPdfResponse;
   getLocation: Location;
   getLocationLog: LocationLog;
   getLocationWorkflows: LocationWorkflowsPayload;
@@ -1493,12 +1558,14 @@ export type Query = {
   getOrganization: Organization;
   getOrganizationRoles: Array<Role>;
   getOrganizationSubsidiaries: Array<Subsidiary>;
+  getPaymentSources: Array<GetPaymentSourceResponse>;
+  getPublicSubsidiaryDetails: PublicSubsidiaryDetailsPayload;
   getRoleById: GetRoleByIdResponse;
   getStripeCustomer: StripeCustomer;
   getStripePlans: StripeList;
   getStripeSubscription: SubscriptionDto;
   getStripeV2Plans: StripeList;
-  getSubscriptionInvoices: SubscriptionInvoicesPayload;
+  getSubscriptionInvoices: Array<GetInvoiceResponse>;
   getSubscriptionPlans: Array<GetSubscriptionPlansResponse>;
   getSubsidiary: Subsidiary;
   getTasks: Array<Task>;
@@ -1578,6 +1645,21 @@ export type QueryGetConfigByOrgIdArgs = {
 };
 
 
+export type QueryGetCustomerSubscriptionsArgs = {
+  subsidiaryId: Scalars['String']['input'];
+};
+
+
+export type QueryGetInvoiceArgs = {
+  invoiceId: Scalars['String']['input'];
+};
+
+
+export type QueryGetInvoiceAsPdfArgs = {
+  invoiceId: Scalars['String']['input'];
+};
+
+
 export type QueryGetLocationArgs = {
   id: Scalars['String']['input'];
 };
@@ -1618,6 +1700,16 @@ export type QueryGetOrganizationSubsidiariesArgs = {
 };
 
 
+export type QueryGetPaymentSourcesArgs = {
+  subsidairyId: Scalars['String']['input'];
+};
+
+
+export type QueryGetPublicSubsidiaryDetailsArgs = {
+  subsidiaryId: Scalars['String']['input'];
+};
+
+
 export type QueryGetRoleByIdArgs = {
   input: GetRoleByIdInput;
 };
@@ -1634,7 +1726,7 @@ export type QueryGetStripeSubscriptionArgs = {
 
 
 export type QueryGetSubscriptionInvoicesArgs = {
-  SubscriptionInvoicesInput: SubscriptionInvoicesInput;
+  subsidairyId: Scalars['String']['input'];
 };
 
 
@@ -1903,13 +1995,6 @@ export type SubscriptionInvoices = {
   has_more: Scalars['Boolean']['output'];
   object?: Maybe<Scalars['String']['output']>;
   url?: Maybe<Scalars['String']['output']>;
-};
-
-export type SubscriptionInvoicesInput = {
-  endingBefore?: InputMaybe<Scalars['String']['input']>;
-  limit: Scalars['Float']['input'];
-  startingAfter?: InputMaybe<Scalars['String']['input']>;
-  subsidiaryId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type SubscriptionInvoicesPayload = {
