@@ -12,7 +12,7 @@ import {
   CREATE_CUSTOMER,
   CREATE_PAYMENT_INTENT,
   CREATE_SUBSCRIPTION,
-} from "@/graphql/queries/subscriptions";
+} from "@/graphql/mutations/subscriptions.mutations";
 
 const subsidiaryId = "ef5b939a-4f39-4d17-b9ab-bbb8a1dd7131";
 
@@ -98,7 +98,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
       if (!createPaymentIntentData) {
         throw new Error("Failed to create payment intent");
       }
-      const { paymentIntent } = createPaymentIntentData;
+      const { paymentIntent } = createPaymentIntentData.createPaymentIntent;
 
       console.log("Payment intent created:", paymentIntent);
 

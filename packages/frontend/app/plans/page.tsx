@@ -1,7 +1,7 @@
 "use client";
 
 import { useQuery } from "@apollo/client";
-import { GET_SUBSCRIPTION_PLANS } from "@/graphql/queries/subscriptions";
+import { GET_SUBSCRIPTION_PLANS } from "@/graphql/queries/subscriptions.queries";
 import PlansList from "./plans-list";
 
 export default function Plans() {
