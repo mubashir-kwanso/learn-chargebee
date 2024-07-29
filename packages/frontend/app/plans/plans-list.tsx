@@ -15,6 +15,7 @@ import {
 } from "@/graphql/mutations/subscriptions.mutations";
 
 const subsidiaryId = "ef5b939a-4f39-4d17-b9ab-bbb8a1dd7131";
+const coupon = "10%OFF";
 
 type SubscriptionPlan = GetSubscriptionPlansQuery["plans"][0];
 type SubscriptionPlanPrice = SubscriptionPlan["prices"][0];
@@ -91,7 +92,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
           input: {
             subsidiaryId,
             priceId: selectedPrice.id,
-            coupon: "50%OFF",
+            coupon,
           },
         },
       });
@@ -116,7 +117,7 @@ const PlansList: React.FC<Props> = ({ plans }) => {
           input: {
             subsidiaryId,
             paymentIntentId: paymentIntent.id,
-            coupon: "50%OFF",
+            coupon,
           },
         },
       });
