@@ -1,8 +1,8 @@
 import { gql } from "../__generated__";
 
 export const GET_SUBSCRIPTION_PLANS = gql(/* GraphQL */ `
-  query GetSubscriptionPlans {
-    plans: getSubscriptionPlans {
+  query GetSubscriptionPlans($input: GetSubscriptionPlansInput!) {
+    plans: getSubscriptionPlans(input: $input) {
       id
       name
       external_name

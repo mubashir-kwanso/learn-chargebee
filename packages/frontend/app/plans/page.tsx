@@ -5,7 +5,13 @@ import { GET_SUBSCRIPTION_PLANS } from "@/graphql/queries/subscriptions.queries"
 import PlansList from "./plans-list";
 
 export default function Plans() {
-  const { data, loading, error } = useQuery(GET_SUBSCRIPTION_PLANS);
+  const { data, loading, error } = useQuery(GET_SUBSCRIPTION_PLANS, {
+    variables: {
+      input: {
+        organizationId: null,
+      },
+    },
+  });
 
   return (
     <div className="max-w-screen-xl mx-auto p-8">

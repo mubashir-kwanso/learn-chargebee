@@ -116,6 +116,16 @@ export type BillingAddress = {
   zip: Scalars['String']['input'];
 };
 
+export type BillingAddressResponse = {
+  __typename?: 'BillingAddressResponse';
+  city?: Maybe<Scalars['String']['output']>;
+  country?: Maybe<Scalars['String']['output']>;
+  line1?: Maybe<Scalars['String']['output']>;
+  line2?: Maybe<Scalars['String']['output']>;
+  state?: Maybe<Scalars['String']['output']>;
+  zip?: Maybe<Scalars['String']['output']>;
+};
+
 export type CardResponse = {
   __typename?: 'CardResponse';
   brand: Scalars['String']['output'];
@@ -220,7 +230,7 @@ export type CreateOrganizationConfigInput = {
 
 export type CreateOrganizationInput = {
   name: Scalars['String']['input'];
-  priceId?: InputMaybe<Scalars['String']['input']>;
+  planId?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -285,27 +295,17 @@ export type CreateWorkflowInput = {
   tasks: Array<CreateTaskInput>;
 };
 
-export type DataEntity = {
-  __typename?: 'DataEntity';
-  active?: Maybe<Scalars['Boolean']['output']>;
-  aggregate_usage?: Maybe<Scalars['String']['output']>;
-  amount?: Maybe<Scalars['Float']['output']>;
-  amount_decimal?: Maybe<Scalars['String']['output']>;
-  billing_scheme?: Maybe<Scalars['String']['output']>;
-  created?: Maybe<Scalars['Float']['output']>;
-  currency?: Maybe<Scalars['String']['output']>;
+export type CustomerResponse = {
+  __typename?: 'CustomerResponse';
+  billing_address?: Maybe<BillingAddressResponse>;
+  card_status?: Maybe<Scalars['String']['output']>;
+  email?: Maybe<Scalars['String']['output']>;
+  first_name?: Maybe<Scalars['String']['output']>;
   id: Scalars['String']['output'];
-  interval?: Maybe<Scalars['String']['output']>;
-  interval_count?: Maybe<Scalars['Float']['output']>;
-  livemode?: Maybe<Scalars['Boolean']['output']>;
-  metadata?: Maybe<Scalars['JSONObject']['output']>;
-  nickname?: Maybe<Scalars['String']['output']>;
+  last_name?: Maybe<Scalars['String']['output']>;
+  meta_data?: Maybe<Scalars['JSONObject']['output']>;
   object?: Maybe<Scalars['String']['output']>;
-  product?: Maybe<Scalars['String']['output']>;
-  tiers_mode?: Maybe<Scalars['String']['output']>;
-  transform_usage?: Maybe<TransformUsage>;
-  trial_period_days?: Maybe<Scalars['String']['output']>;
-  usage_type?: Maybe<Scalars['String']['output']>;
+  primary_payment_source_id?: Maybe<Scalars['String']['output']>;
 };
 
 export type DeleteAddressInput = {
@@ -374,33 +374,15 @@ export type GetCouponInput = {
   coupon: Scalars['String']['input'];
 };
 
-export type GetInvoiceAsPdfResponse = {
-  __typename?: 'GetInvoiceAsPdfResponse';
-  download_url: Scalars['String']['output'];
-  mime_type?: Maybe<Scalars['String']['output']>;
-  valid_till: Scalars['Float']['output'];
-};
-
-export type GetInvoiceResponse = {
-  __typename?: 'GetInvoiceResponse';
-  amount_paid?: Maybe<Scalars['Float']['output']>;
-  due_date?: Maybe<Scalars['Float']['output']>;
-  id: Scalars['String']['output'];
-  status: Scalars['String']['output'];
-  total?: Maybe<Scalars['Float']['output']>;
+export type GetCustomerPaymentSourcesInput = {
+  pagination: SubscriptionPaginationInput;
+  subsidiaryId: Scalars['String']['input'];
 };
 
 export type GetLocationsByWorkflowPayload = {
   __typename?: 'GetLocationsByWorkflowPayload';
   count: Scalars['Float']['output'];
   locations?: Maybe<Array<Maybe<Location>>>;
-};
-
-export type GetPaymentSourceResponse = {
-  __typename?: 'GetPaymentSourceResponse';
-  card: CardResponse;
-  created_at: Scalars['Float']['output'];
-  id: Scalars['String']['output'];
 };
 
 export type GetRoleByIdInput = {
@@ -419,21 +401,8 @@ export type GetRoleByIdResponse = {
   updatedAt?: Maybe<Scalars['DateTime']['output']>;
 };
 
-export type GetSubscriptionPlansResponse = {
-  __typename?: 'GetSubscriptionPlansResponse';
-  description?: Maybe<Scalars['String']['output']>;
-  external_name?: Maybe<Scalars['String']['output']>;
-  id: Scalars['String']['output'];
-  item_family_id?: Maybe<Scalars['String']['output']>;
-  metadata?: Maybe<Scalars['JSONObject']['output']>;
-  metered: Scalars['Boolean']['output'];
-  name: Scalars['String']['output'];
-  object?: Maybe<Scalars['String']['output']>;
-  prices: Array<ItemPriceResponse>;
-  status?: Maybe<Scalars['String']['output']>;
-  type: Scalars['String']['output'];
-  unit?: Maybe<Scalars['String']['output']>;
-  usage_calculation?: Maybe<Scalars['String']['output']>;
+export type GetSubscriptionPlansInput = {
+  organizationId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type GetUserByIdInput = {
@@ -562,6 +531,22 @@ export type InviteUserPayload = {
   phone?: Maybe<Scalars['String']['output']>;
   roleIds?: Maybe<Array<Scalars['String']['output']>>;
   roles?: Maybe<Array<Role>>;
+};
+
+export type InvoiceAsPdfResponse = {
+  __typename?: 'InvoiceAsPdfResponse';
+  download_url: Scalars['String']['output'];
+  mime_type?: Maybe<Scalars['String']['output']>;
+  valid_till: Scalars['Float']['output'];
+};
+
+export type InvoiceResponse = {
+  __typename?: 'InvoiceResponse';
+  amount_paid?: Maybe<Scalars['Float']['output']>;
+  due_date?: Maybe<Scalars['Float']['output']>;
+  id: Scalars['String']['output'];
+  status: Scalars['String']['output'];
+  total?: Maybe<Scalars['Float']['output']>;
 };
 
 export type ItemPriceResponse = {
@@ -1175,7 +1160,7 @@ export type Organization = {
   name: Scalars['String']['output'];
   organizationConfigs?: Maybe<Array<OrganizationConfigs>>;
   organizationToUsers?: Maybe<Array<Maybe<OrganizationToUser>>>;
-  priceId?: Maybe<Scalars['String']['output']>;
+  planId?: Maybe<Scalars['String']['output']>;
   roles?: Maybe<Array<Maybe<Role>>>;
   slug: Scalars['String']['output'];
   subsidiaries?: Maybe<Array<Subsidiary>>;
@@ -1291,6 +1276,12 @@ export type PaymentIntentResponse = {
   updated_at?: Maybe<Scalars['Float']['output']>;
 };
 
+export type PaymentSourceListResponse = {
+  __typename?: 'PaymentSourceListResponse';
+  next_offset?: Maybe<Scalars['String']['output']>;
+  paymentSources: Array<PaymentSourceResponse>;
+};
+
 export type PaymentSourceResponse = {
   __typename?: 'PaymentSourceResponse';
   card: CardResponse;
@@ -1349,10 +1340,13 @@ export type Query = {
   getChartData: Array<ChartDataPayload>;
   getConfigByOrgId: Array<OrganizationConfigs>;
   getCoupon: CouponResponse;
+  getCustomer: CustomerResponse;
   getCustomerCurrentSubscription: SubscriptionResponse;
+  getCustomerInvoices: Array<InvoiceResponse>;
+  getCustomerPaymentSources: PaymentSourceListResponse;
   getCustomerSubscriptions: Array<SubscriptionResponse>;
-  getInvoice: GetInvoiceResponse;
-  getInvoiceAsPdf: GetInvoiceAsPdfResponse;
+  getInvoice: InvoiceResponse;
+  getInvoiceAsPdf: InvoiceAsPdfResponse;
   getLocation: Location;
   getLocationLog: LocationLog;
   getLocationWorkflows: LocationWorkflowsPayload;
@@ -1361,13 +1355,9 @@ export type Query = {
   getOrganization: Organization;
   getOrganizationRoles: Array<Role>;
   getOrganizationSubsidiaries: Array<Subsidiary>;
-  getPaymentSources: Array<GetPaymentSourceResponse>;
   getRoleById: GetRoleByIdResponse;
-  getStripePlans: StripeList;
-  getStripeV2Plans: StripeList;
   getSubscriptionDetailsForSubsidiary: SubscriptionDetailsForSubsidiaryResponse;
-  getSubscriptionInvoices: Array<GetInvoiceResponse>;
-  getSubscriptionPlans: Array<GetSubscriptionPlansResponse>;
+  getSubscriptionPlans: Array<SubscriptionPlansResponse>;
   getSubsidiary: Subsidiary;
   getTasks: Array<Task>;
   getUserById: User;
@@ -1382,7 +1372,6 @@ export type Query = {
   search: SearchResultPayload;
   slugLookup: SlugSuggestionsPayload;
   sorStatusCheck: BibsorPayload;
-  validateCoupon: StripeCouponPayload;
 };
 
 
@@ -1451,8 +1440,23 @@ export type QueryGetCouponArgs = {
 };
 
 
+export type QueryGetCustomerArgs = {
+  subsidiaryId: Scalars['String']['input'];
+};
+
+
 export type QueryGetCustomerCurrentSubscriptionArgs = {
   subsidiaryId: Scalars['String']['input'];
+};
+
+
+export type QueryGetCustomerInvoicesArgs = {
+  subsidiaryId: Scalars['String']['input'];
+};
+
+
+export type QueryGetCustomerPaymentSourcesArgs = {
+  input: GetCustomerPaymentSourcesInput;
 };
 
 
@@ -1511,11 +1515,6 @@ export type QueryGetOrganizationSubsidiariesArgs = {
 };
 
 
-export type QueryGetPaymentSourcesArgs = {
-  subsidairyId: Scalars['String']['input'];
-};
-
-
 export type QueryGetRoleByIdArgs = {
   input: GetRoleByIdInput;
 };
@@ -1526,8 +1525,8 @@ export type QueryGetSubscriptionDetailsForSubsidiaryArgs = {
 };
 
 
-export type QueryGetSubscriptionInvoicesArgs = {
-  subsidairyId: Scalars['String']['input'];
+export type QueryGetSubscriptionPlansArgs = {
+  input: GetSubscriptionPlansInput;
 };
 
 
@@ -1588,11 +1587,6 @@ export type QuerySlugLookupArgs = {
 
 export type QuerySorStatusCheckArgs = {
   sorStatusCheck: SorStatusCheckInput;
-};
-
-
-export type QueryValidateCouponArgs = {
-  code: Scalars['String']['input'];
 };
 
 export type RawData = {
@@ -1669,7 +1663,7 @@ export type SignUpUserInput = {
   email: Scalars['String']['input'];
   name: Scalars['String']['input'];
   password: Scalars['String']['input'];
-  priceId?: InputMaybe<Scalars['String']['input']>;
+  planId?: InputMaybe<Scalars['String']['input']>;
   slug?: InputMaybe<Scalars['String']['input']>;
 };
 
@@ -1695,53 +1689,12 @@ export enum SortOrder {
   Desc = 'DESC'
 }
 
-export type StripeCouponCode = {
-  __typename?: 'StripeCouponCode';
-  amount_off?: Maybe<Scalars['Float']['output']>;
-  duration?: Maybe<Scalars['String']['output']>;
-  duration_in_months?: Maybe<Scalars['Float']['output']>;
-  id?: Maybe<Scalars['String']['output']>;
-  max_redemptions?: Maybe<Scalars['Float']['output']>;
-  name?: Maybe<Scalars['String']['output']>;
-  object?: Maybe<Scalars['String']['output']>;
-  percent_off?: Maybe<Scalars['Float']['output']>;
-  redeem_by?: Maybe<Scalars['Float']['output']>;
-  times_redeemed?: Maybe<Scalars['Float']['output']>;
-  valid?: Maybe<Scalars['Boolean']['output']>;
-};
-
-export type StripeCouponPayload = {
-  __typename?: 'StripeCouponPayload';
-  coupon?: Maybe<StripeCouponCode>;
-  promotionCode?: Maybe<StripePromotionCode>;
-};
-
-export type StripeList = {
-  __typename?: 'StripeList';
-  data?: Maybe<Array<Maybe<DataEntity>>>;
-  has_more: Scalars['Boolean']['output'];
-  object: Scalars['String']['output'];
-  starting_after?: Maybe<Scalars['String']['output']>;
-  url: Scalars['String']['output'];
-};
-
-export type StripePromotionCode = {
-  __typename?: 'StripePromotionCode';
-  active?: Maybe<Scalars['Boolean']['output']>;
-  code?: Maybe<Scalars['String']['output']>;
-  coupon?: Maybe<StripeCouponCode>;
-  expires_at?: Maybe<Scalars['Float']['output']>;
-  id?: Maybe<Scalars['String']['output']>;
-  max_redemptions?: Maybe<Scalars['Float']['output']>;
-  object?: Maybe<Scalars['String']['output']>;
-  restrictions?: Maybe<StripePromotionCodeRestriction>;
-  times_redeemed?: Maybe<Scalars['Float']['output']>;
-};
-
-export type StripePromotionCodeRestriction = {
-  __typename?: 'StripePromotionCodeRestriction';
-  first_time_transaction?: Maybe<Scalars['Boolean']['output']>;
-  minimum_amount?: Maybe<Scalars['Float']['output']>;
+export type SubscriptionCouponResponse = {
+  __typename?: 'SubscriptionCouponResponse';
+  applied_count: Scalars['Float']['output'];
+  apply_till?: Maybe<Scalars['Float']['output']>;
+  coupon_code?: Maybe<Scalars['String']['output']>;
+  coupon_id: Scalars['String']['output'];
 };
 
 export type SubscriptionDetailsForSubsidiaryResponse = {
@@ -1762,11 +1715,34 @@ export type SubscriptionItemResponse = {
   unit_price?: Maybe<Scalars['Float']['output']>;
 };
 
+export type SubscriptionPaginationInput = {
+  limit: Scalars['Int']['input'];
+  offset?: InputMaybe<Scalars['String']['input']>;
+};
+
+export type SubscriptionPlansResponse = {
+  __typename?: 'SubscriptionPlansResponse';
+  description?: Maybe<Scalars['String']['output']>;
+  external_name?: Maybe<Scalars['String']['output']>;
+  id: Scalars['String']['output'];
+  item_family_id?: Maybe<Scalars['String']['output']>;
+  metadata?: Maybe<Scalars['JSONObject']['output']>;
+  metered: Scalars['Boolean']['output'];
+  name: Scalars['String']['output'];
+  object?: Maybe<Scalars['String']['output']>;
+  prices: Array<ItemPriceResponse>;
+  status?: Maybe<Scalars['String']['output']>;
+  type: Scalars['String']['output'];
+  unit?: Maybe<Scalars['String']['output']>;
+  usage_calculation?: Maybe<Scalars['String']['output']>;
+};
+
 export type SubscriptionResponse = {
   __typename?: 'SubscriptionResponse';
   activated_at?: Maybe<Scalars['Float']['output']>;
   billing_period?: Maybe<Scalars['Float']['output']>;
   billing_period_unit?: Maybe<Scalars['String']['output']>;
+  coupons?: Maybe<Array<SubscriptionCouponResponse>>;
   created_at?: Maybe<Scalars['Float']['output']>;
   customer_id: Scalars['String']['output'];
   due_invoices_count?: Maybe<Scalars['Float']['output']>;
@@ -1834,11 +1810,6 @@ export type TaskOperationProcessing = {
   value: Scalars['String']['input'];
 };
 
-export type TransformUsage = {
-  __typename?: 'TransformUsage';
-  transform_type: Scalars['String']['output'];
-};
-
 export type Type = {
   __typename?: 'Type';
   Text?: Maybe<Scalars['String']['output']>;
@@ -1876,7 +1847,7 @@ export type UpdateOrganizationConfigInput = {
 export type UpdateOrganizationInput = {
   name?: InputMaybe<Scalars['String']['input']>;
   organizationId: Scalars['String']['input'];
-  priceId?: InputMaybe<Scalars['String']['input']>;
+  planId?: InputMaybe<Scalars['String']['input']>;
 };
 
 export type UpdatePasswordInputForProfile = {
@@ -2127,13 +2098,15 @@ export type CreateSubscriptionMutationVariables = Exact<{
 
 export type CreateSubscriptionMutation = { __typename?: 'Mutation', subscription: { __typename?: 'SubscriptionResponse', id: string, status: string } };
 
-export type GetSubscriptionPlansQueryVariables = Exact<{ [key: string]: never; }>;
+export type GetSubscriptionPlansQueryVariables = Exact<{
+  input: GetSubscriptionPlansInput;
+}>;
 
 
-export type GetSubscriptionPlansQuery = { __typename?: 'Query', plans: Array<{ __typename?: 'GetSubscriptionPlansResponse', id: string, name: string, external_name?: string | null, description?: string | null, status?: string | null, item_family_id?: string | null, type: string, unit?: string | null, metered: boolean, usage_calculation?: string | null, metadata?: any | null, object?: string | null, prices: Array<{ __typename?: 'ItemPriceResponse', id: string, name: string, currency_code: string, pricing_model: string, free_quantity: number, item_family_id?: string | null, item_id?: string | null, status?: string | null, external_name?: string | null, price?: number | null, period?: number | null, period_unit?: string | null, is_taxable?: boolean | null, item_type?: string | null, object?: string | null, metadata?: any | null, description?: string | null }> }> };
+export type GetSubscriptionPlansQuery = { __typename?: 'Query', plans: Array<{ __typename?: 'SubscriptionPlansResponse', id: string, name: string, external_name?: string | null, description?: string | null, status?: string | null, item_family_id?: string | null, type: string, unit?: string | null, metered: boolean, usage_calculation?: string | null, metadata?: any | null, object?: string | null, prices: Array<{ __typename?: 'ItemPriceResponse', id: string, name: string, currency_code: string, pricing_model: string, free_quantity: number, item_family_id?: string | null, item_id?: string | null, status?: string | null, external_name?: string | null, price?: number | null, period?: number | null, period_unit?: string | null, is_taxable?: boolean | null, item_type?: string | null, object?: string | null, metadata?: any | null, description?: string | null }> }> };
 
 
 export const CreateCustomerDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateCustomer"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateCustomerInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createCustomer"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}]}]}}]} as unknown as DocumentNode<CreateCustomerMutation, CreateCustomerMutationVariables>;
 export const CreatePaymentIntentDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreatePaymentIntent"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreatePaymentIntentInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"createPaymentIntent"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"paymentIntent"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"currency_code"}},{"kind":"Field","name":{"kind":"Name","value":"amount"}},{"kind":"Field","name":{"kind":"Name","value":"gateway_account_id"}},{"kind":"Field","name":{"kind":"Name","value":"expires_at"}},{"kind":"Field","name":{"kind":"Name","value":"payment_method_type"}},{"kind":"Field","name":{"kind":"Name","value":"success_url"}},{"kind":"Field","name":{"kind":"Name","value":"failure_url"}},{"kind":"Field","name":{"kind":"Name","value":"created_at"}},{"kind":"Field","name":{"kind":"Name","value":"modified_at"}},{"kind":"Field","name":{"kind":"Name","value":"resource_version"}},{"kind":"Field","name":{"kind":"Name","value":"updated_at"}},{"kind":"Field","name":{"kind":"Name","value":"customer_id"}},{"kind":"Field","name":{"kind":"Name","value":"gateway"}},{"kind":"Field","name":{"kind":"Name","value":"object"}}]}},{"kind":"Field","name":{"kind":"Name","value":"price"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"currency_code"}},{"kind":"Field","name":{"kind":"Name","value":"pricing_model"}},{"kind":"Field","name":{"kind":"Name","value":"free_quantity"}},{"kind":"Field","name":{"kind":"Name","value":"item_family_id"}},{"kind":"Field","name":{"kind":"Name","value":"item_id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"external_name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"period_unit"}},{"kind":"Field","name":{"kind":"Name","value":"is_taxable"}},{"kind":"Field","name":{"kind":"Name","value":"item_type"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"object"}}]}}]}}]}}]} as unknown as DocumentNode<CreatePaymentIntentMutation, CreatePaymentIntentMutationVariables>;
 export const CreateSubscriptionDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"mutation","name":{"kind":"Name","value":"CreateSubscription"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"CreateSubscriptionInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"subscription"},"name":{"kind":"Name","value":"createSubscription"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}}]}}]}}]} as unknown as DocumentNode<CreateSubscriptionMutation, CreateSubscriptionMutationVariables>;
-export const GetSubscriptionPlansDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSubscriptionPlans"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"plans"},"name":{"kind":"Name","value":"getSubscriptionPlans"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"external_name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"item_family_id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"metered"}},{"kind":"Field","name":{"kind":"Name","value":"usage_calculation"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"object"}},{"kind":"Field","name":{"kind":"Name","value":"prices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"currency_code"}},{"kind":"Field","name":{"kind":"Name","value":"pricing_model"}},{"kind":"Field","name":{"kind":"Name","value":"free_quantity"}},{"kind":"Field","name":{"kind":"Name","value":"item_family_id"}},{"kind":"Field","name":{"kind":"Name","value":"item_id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"external_name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"period_unit"}},{"kind":"Field","name":{"kind":"Name","value":"is_taxable"}},{"kind":"Field","name":{"kind":"Name","value":"item_type"}},{"kind":"Field","name":{"kind":"Name","value":"object"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetSubscriptionPlansQuery, GetSubscriptionPlansQueryVariables>;
+export const GetSubscriptionPlansDocument = {"kind":"Document","definitions":[{"kind":"OperationDefinition","operation":"query","name":{"kind":"Name","value":"GetSubscriptionPlans"},"variableDefinitions":[{"kind":"VariableDefinition","variable":{"kind":"Variable","name":{"kind":"Name","value":"input"}},"type":{"kind":"NonNullType","type":{"kind":"NamedType","name":{"kind":"Name","value":"GetSubscriptionPlansInput"}}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","alias":{"kind":"Name","value":"plans"},"name":{"kind":"Name","value":"getSubscriptionPlans"},"arguments":[{"kind":"Argument","name":{"kind":"Name","value":"input"},"value":{"kind":"Variable","name":{"kind":"Name","value":"input"}}}],"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"external_name"}},{"kind":"Field","name":{"kind":"Name","value":"description"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"item_family_id"}},{"kind":"Field","name":{"kind":"Name","value":"type"}},{"kind":"Field","name":{"kind":"Name","value":"unit"}},{"kind":"Field","name":{"kind":"Name","value":"metered"}},{"kind":"Field","name":{"kind":"Name","value":"usage_calculation"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"object"}},{"kind":"Field","name":{"kind":"Name","value":"prices"},"selectionSet":{"kind":"SelectionSet","selections":[{"kind":"Field","name":{"kind":"Name","value":"id"}},{"kind":"Field","name":{"kind":"Name","value":"name"}},{"kind":"Field","name":{"kind":"Name","value":"currency_code"}},{"kind":"Field","name":{"kind":"Name","value":"pricing_model"}},{"kind":"Field","name":{"kind":"Name","value":"free_quantity"}},{"kind":"Field","name":{"kind":"Name","value":"item_family_id"}},{"kind":"Field","name":{"kind":"Name","value":"item_id"}},{"kind":"Field","name":{"kind":"Name","value":"status"}},{"kind":"Field","name":{"kind":"Name","value":"external_name"}},{"kind":"Field","name":{"kind":"Name","value":"price"}},{"kind":"Field","name":{"kind":"Name","value":"period"}},{"kind":"Field","name":{"kind":"Name","value":"period_unit"}},{"kind":"Field","name":{"kind":"Name","value":"is_taxable"}},{"kind":"Field","name":{"kind":"Name","value":"item_type"}},{"kind":"Field","name":{"kind":"Name","value":"object"}},{"kind":"Field","name":{"kind":"Name","value":"metadata"}},{"kind":"Field","name":{"kind":"Name","value":"description"}}]}}]}}]}}]} as unknown as DocumentNode<GetSubscriptionPlansQuery, GetSubscriptionPlansQueryVariables>;
