@@ -58,3 +58,21 @@ export const CREATE_SUBSCRIPTION = gql(/* GraphQL */ `
     }
   }
 `);
+
+export const CREATE_PAYMENT_SOURCE = gql(/* GraphQL */ `
+  mutation CreatePaymentSource($input: CreatePaymentSourceInput!) {
+    createPaymentSource(input: $input) {
+      id
+      created_at
+      card {
+        first_name
+        last_name
+        iin
+        last4
+        brand
+        expiry_month
+        expiry_year
+      }
+    }
+  }
+`);

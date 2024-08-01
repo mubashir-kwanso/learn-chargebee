@@ -16,11 +16,6 @@ export default function Home() {
           className="border rounded-md w-full max-w-xl p-4"
           onSubmit={(e) => {
             e.preventDefault();
-            if (!user.email || !user.email.trim()) {
-              return;
-            }
-            // Route to the plans page
-            router.push("/plans");
           }}
         >
           <input
@@ -35,10 +30,30 @@ export default function Home() {
             className="ring block w-full p-2 focus:outline-none focus:ring-blue-500 rounded-md"
           />
           <button
-            type="submit"
+            type="button"
             className="block w-full p-2 mt-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={() => {
+              if (!user.email || !user.email.trim()) {
+                return;
+              }
+              // Route to the plans page
+              router.push("/plans");
+            }}
           >
-            Login
+            Create Subscription
+          </button>
+          <button
+            type="button"
+            className="block w-full p-2 mt-4 bg-blue-500 text-white rounded-md hover:bg-blue-600"
+            onClick={() => {
+              if (!user.email || !user.email.trim()) {
+                return;
+              }
+              // Route to the payment source page
+              router.push("/payment-source");
+            }}
+          >
+            Create Payment Source
           </button>
         </form>
       </div>
